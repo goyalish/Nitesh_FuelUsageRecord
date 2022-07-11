@@ -1,27 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { NativeModules } from 'react-native';
+const { ReactOneCustomMethod } = NativeModules;
 const initFuelInfo = () => {
-    let fuelData = [
-        {
-            fuelType: "Petrol",
-            pricePerLiter: 30
-        },
-        {
-            fuelType: "Diesel",
-            pricePerLiter: 40
-        },
-        {
-            fuelType: "Battery Charge",
-            pricePerLiter: 10
-        },
-    ]
-    AsyncStorage.setItem("fuelData", JSON.stringify(fuelData))
-    AsyncStorage.setItem("userMaxAllowance", JSON.stringify(300))
+    ReactOneCustomMethod.getFuelData()
+            .then((res) => {
+                AsyncStorage.setItem("fuelData", JSON.stringify(res.data))
+                AsyncStorage.setItem("userMaxAllowance", JSON.stringify(res.userMaxAllowance))
+            })
 }
 
 const getMultipleData = (callback) => {
     try {
       AsyncStorage.multiGet(["fuelData", "userMaxAllowance"]).then((savedData) => {
-        // console.log(savedData);
         const data = Object.fromEntries(savedData);
         let finalData = {
           fuelData: JSON.parse(data.fuelData),

@@ -1,13 +1,15 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, NativeModules } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker'
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getMultipleData } from '../AsyncStorageUtil';
 import React, { useState, useEffect } from "react";
+const { ReactOneCustomMethod } = NativeModules;
+
 const AddFuel = (props) => {
     const [getFuelData, setFuelData] = useState([]);
-    // const userMaxAllowance = useSelector(state => state.userMaxAllowance);
     const [inputValue, setInputValue] = useState('');
     const [item, setItem] = useState();
+    const [getBalance, setBalance] = useState();
     const route = useRoute();
     const navigation = useNavigation();
     useEffect(() => {
@@ -16,6 +18,7 @@ const AddFuel = (props) => {
         getMultipleData((finalData) => {
             console.log('received data for dropdown');
             console.log(finalData.fuelData[0].fuelType);
+            setBalance(finalData.userMaxAllowance)
             setItem({ label: finalData.fuelData[0].fuelType, value: finalData.fuelData[0].pricePerLiter });
             setFuelData(finalData.fuelData.map((obj) => { return { label: obj.fuelType, value: obj.pricePerLiter.toString() } }))
         })
@@ -23,27 +26,34 @@ const AddFuel = (props) => {
     const submitData = () => {
         console.log("submitData");
         let total = parseFloat(inputValue) * item.value;
-        if (total < route.params.userMaxAllowance) {
-            let data = {
-                id: Date.now() + Math.random(),
-                type: item.label,
-                price: total,
-                quantity: parseFloat(inputValue)
-            }
-            let finalBalance = route.params.userMaxAllowance - total;
-            route.params.handleAddFuel({data, finalBalance})
-            alert("Added successfully")
-            navigation.goBack();
-        } else {
-            alert("Don't have balance")
+        let obj = {
+            userMaxAllowance: getBalance,
+            total: total
         }
+        ReactOneCustomMethod.checkBalance(obj)
+            .then((res) => {
+                if (res) {
+                    let data = {
+                        id: Date.now() + Math.random(),
+                        type: item.label,
+                        price: total,
+                        quantity: parseFloat(inputValue)
+                    }
+                    let finalBalance = getBalance - total;
+                    route.params.handleAddFuel({ data, finalBalance })
+                    alert("Added successfully")
+                    navigation.goBack();
+                } else {
+                    alert("Don't have balance")
+                }
+            });
     }
 
     return (
         <View style={styles.formWrapper}>
             <DropDownPicker
                 items={getFuelData}
-                placeholder = {"Petrol"}
+                placeholder={"Petrol"}
                 containerStyle={{ height: 40 }}
                 onChangeItem={item => setItem(item)}
             />

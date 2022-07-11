@@ -7,7 +7,6 @@ import { auth } from "../firebase";
 import { initFuelInfo } from "../AsyncStorageUtil";
 export default function LoginPage() {
   const navigation = useNavigation();
-  const [getButtonText, setButtonText] = useState("SignIn/Signup")
   const [values, setValues] = useState({
     email: "",
     pwd: "",
@@ -63,8 +62,7 @@ export default function LoginPage() {
       .then((res) => {
         
         console.log('User registered successfully!')
-        
-        setButtonText("Login")
+        Alert.alert("Sign up completed")
       })
       .catch(error => this.setState({ errorMessage: error.message }))      
     }
@@ -94,9 +92,10 @@ export default function LoginPage() {
           width: "92%",
         }}
       >
-        <Button onClick={handleButtonClick} title={getButtonText} />
-        
-
+        <View style={styles.buttons}>
+        <Button onClick={login} title="Sign-In" />
+        <Button onClick={addUser} title="SignUp" />
+        </View>
       </View>
     </View>
   );
@@ -117,4 +116,10 @@ const styles = StyleSheet.create({
     borderColor: '#7a42f4',
     borderWidth: 1
   },
+  buttons: {
+    flexDirection: "column",
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });

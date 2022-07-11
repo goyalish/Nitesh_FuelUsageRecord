@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
-import { useState } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, NativeModules } from 'react-native';
+import { useState, useEffect } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { getMultipleData } from '../AsyncStorageUtil';
 
 const Home = (props) => {
     let item = {
@@ -10,17 +11,48 @@ const Home = (props) => {
     }
     const navigation = useNavigation();
     const [getFuelList, setFuelList] = useState([]);
-    const [getBalance, setBalance] = useState(300);
+    const [getBalance, setBalance] = useState(400);
+    const [getDeviceId, setDeviceId] = useState("");
+    const [getDeviceType, setDeviceType] = useState("");
+    const { ReactOneCustomMethod } = NativeModules;
 
     const removeData = (item) => {
         let updatedList = getFuelList.filter((obj) => obj.id !== item.id)
         setFuelList(updatedList)
         let updatedBalance = getBalance + item.price;
         setBalance(updatedBalance)
+        getMultipleData((finalData) => {
+            console.log("finalData.userMaxAllowance:" + finalData.userMaxAllowance)
+            setBalance(finalData.userMaxAllowance)
+        });
         Alert.alert("Removed successfully")
     }
+    useEffect(() => {
+        // Update the document title using the browser API
+        console.log("Caaling NM");
+        ReactOneCustomMethod.getPhoneID()
+            .then((res: string) => {
+                setDeviceId(res);
+                console.log("Caaling getPhoneID");
+                console.log(res);
+            })
+            .catch((err: any) => {
+                console.error(err);
+            });
 
+        ReactOneCustomMethod.getDeviceType()
+            .then((res: string) => {
+                setDeviceType(res);
+                console.log("Caaling getDeviceType");
+
+                console.log(res);
+            })
+            .catch((err: any) => {
+                console.error(err);
+            });
+    }, []);
     const _renderItem = ({ item }) => {
+
         return (
             <View style={styles.mainStyle}>
                 <View>
@@ -55,6 +87,8 @@ const Home = (props) => {
 
     return (
         <View style={styles.formWrapper}>
+            <Text style={styles.label} >Device ID: {getDeviceId}</Text>
+            <Text style={styles.label} >Device type: {getDeviceType}</Text>
             <TouchableOpacity onPress={() => {
                 // alert('reate list clicked')
                 console.log('Create list clicked');
@@ -63,7 +97,17 @@ const Home = (props) => {
             }} style={styles.btn}>
                 <Text style={styles.btnText}>Create List</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => {
+                // alert('reate list clicked')
+                console.log('Show Device Info clicked');
+                navigation.navigate('DeviceInfoScreen');
+            }} style={styles.btn}>
+                <Text style={styles.btnText}>Show Device Info</Text>
+            </TouchableOpacity>
+
             <Text style={styles.label} >User Allowance Remaining: {getBalance}</Text>
+            
             <FlatList
                 data={getFuelList}
                 renderItem={_renderItem}
@@ -83,10 +127,11 @@ const styles = StyleSheet.create({
     btn: {
         backgroundColor: "grey",
         justifyContent: 'center',
-        width: 120,
+        width: '80%',
         alignItems: 'center',
         height: 40,
-        borderRadius: 5
+        borderRadius: 5,
+        marginVertical: 8
     },
     btnText: {
         color: 'white',
