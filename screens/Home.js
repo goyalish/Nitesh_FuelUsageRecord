@@ -4,32 +4,20 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { getMultipleData } from '../AsyncStorageUtil';
 
 const Home = (props) => {
-    let item = {
-        type: "PETROL",
-        price: 30,
-        quantity: 1
-    }
+    
     const navigation = useNavigation();
     const [getFuelList, setFuelList] = useState([]);
-    const [getBalance, setBalance] = useState(400);
+    const [getBalance, setBalance] = useState(300);
     const [getDeviceId, setDeviceId] = useState("");
     const [getDeviceType, setDeviceType] = useState("");
     const { ReactOneCustomMethod } = NativeModules;
-
-    const removeData = (item) => {
-        let updatedList = getFuelList.filter((obj) => obj.id !== item.id)
-        setFuelList(updatedList)
-        let updatedBalance = getBalance + item.price;
-        setBalance(updatedBalance)
-        getMultipleData((finalData) => {
-            console.log("finalData.userMaxAllowance:" + finalData.userMaxAllowance)
-            setBalance(finalData.userMaxAllowance)
-        });
-        Alert.alert("Removed successfully")
-    }
+    
     useEffect(() => {
         // Update the document title using the browser API
-        console.log("Caaling NM");
+        console.log("Calling NM");
+        getMultipleData((finalData) => {
+            setBalance(finalData.userMaxAllowance)
+        });
         ReactOneCustomMethod.getPhoneID()
             .then((res: string) => {
                 setDeviceId(res);
@@ -51,6 +39,15 @@ const Home = (props) => {
                 console.error(err);
             });
     }, []);
+
+    const removeData = (item) => {
+        let updatedList = getFuelList.filter((obj) => obj.id !== item.id)
+        setFuelList(updatedList)
+        let updatedBalance = getBalance + item.price;
+        setBalance(updatedBalance)
+        Alert.alert("Removed successfully")
+    }
+
     const _renderItem = ({ item }) => {
 
         return (
@@ -72,7 +69,8 @@ const Home = (props) => {
     const handleAddFuel = (data) => {
         console.log("handleAddFuel");
         console.log(data.data);
-        setBalance(data.finalBalance)
+        let balance = getBalance - data.data.price;
+        setBalance(balance)
         let newItem = data.data
         setFuelList((prev) => [
             ...prev,

@@ -18,7 +18,7 @@ const AddFuel = (props) => {
         getMultipleData((finalData) => {
             console.log('received data for dropdown');
             console.log(finalData.fuelData[0].fuelType);
-            setBalance(finalData.userMaxAllowance)
+            setBalance(route.params.userMaxAllowance)
             setItem({ label: finalData.fuelData[0].fuelType, value: finalData.fuelData[0].pricePerLiter });
             setFuelData(finalData.fuelData.map((obj) => { return { label: obj.fuelType, value: obj.pricePerLiter.toString() } }))
         })
@@ -39,8 +39,7 @@ const AddFuel = (props) => {
                         price: total,
                         quantity: parseFloat(inputValue)
                     }
-                    let finalBalance = getBalance - total;
-                    route.params.handleAddFuel({ data, finalBalance })
+                    route.params.handleAddFuel({ data })
                     alert("Added successfully")
                     navigation.goBack();
                 } else {

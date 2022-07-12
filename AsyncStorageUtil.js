@@ -17,7 +17,7 @@ const getMultipleData = (callback) => {
           fuelData: JSON.parse(data.fuelData),
           userMaxAllowance: parseInt(data.userMaxAllowance)
         }
-        console.log(finalData);
+        // console.log(finalData);
         callback(finalData)
       })
     } catch (error) {
